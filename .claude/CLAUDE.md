@@ -35,7 +35,7 @@ Light mode only for v1.
 - `accessibilityLabel` and `accessibilityRole` on every interactive element.
 - Safe area from react-native-safe-area-context.
 
-## Day 1 — Scaffold commands
+## — Scaffold commands
 pnpm create expo-app . -t default-typescript
 pnpm add nativewind@latest tailwindcss@^3.4
 pnpm add react-native-reanimated react-native-gesture-handler react-native-safe-area-context
