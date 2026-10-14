@@ -1,0 +1,86 @@
+/** @type {import('tailwindcss').Config} */
+
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
+module.exports = {
+  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
+  presets: [require('nativewind/preset')],
+  theme: {
+    // Replaces Tailwind's palette entirely: only brand tokens exist.
+    colors: {
+      transparent: 'transparent',
+      bg: token('bg'),
+      'bg-raised': token('bg-raised'),
+      surface: token('surface'),
+      'surface-sunken': token('surface-sunken'),
+      ink: token('ink'),
+      muted: token('muted'),
+      subtle: token('subtle'),
+      line: token('line'),
+      'line-strong': token('line-strong'),
+      coral: token('coral'),
+      'coral-soft': token('coral-soft'),
+      teal: token('teal'),
+      'teal-soft': token('teal-soft'),
+      amber: token('amber'),
+      'amber-soft': token('amber-soft'),
+      rose: token('rose'),
+      'rose-soft': token('rose-soft'),
+    },
+    // 4-point grid only, plus px for 1px lines. 9 (36) is the sheet handle, 11 (44) the minimum hit target.
+    spacing: {
+      0: '0px',
+      px: '1px',
+      1: '4px',
+      2: '8px',
+      3: '12px',
+      4: '16px',
+      5: '20px',
+      6: '24px',
+      8: '32px',
+      9: '36px',
+      10: '40px',
+      11: '44px',
+      12: '48px',
+      14: '56px',
+      18: '72px',
+      24: '96px',
+    },
+    borderRadius: {
+      none: '0px',
+      sm: '10px',
+      md: '14px',
+      lg: '20px',
+      xl: '24px',
+      '2xl': '28px',
+      pill: '999px',
+    },
+    // One family per weight: custom fonts on Android ignore fontWeight.
+    fontFamily: {
+      display: ['Fraunces_500Medium'],
+      sans: ['Geist_400Regular'],
+      'sans-medium': ['Geist_500Medium'],
+      'sans-semibold': ['Geist_600SemiBold'],
+      mono: ['GeistMono_500Medium'],
+    },
+    fontSize: {
+      'display-xl': ['56px', { lineHeight: '60px' }],
+      'display-lg': ['40px', { lineHeight: '44px' }],
+      'display-md': ['32px', { lineHeight: '36px' }],
+      'title-lg': ['22px', { lineHeight: '28px' }],
+      title: ['18px', { lineHeight: '24px' }],
+      'body-lg': ['17px', { lineHeight: '24px' }],
+      body: ['15px', { lineHeight: '22px' }],
+      caption: ['13px', { lineHeight: '18px' }],
+      micro: ['11px', { lineHeight: '14px' }],
+      'mono-lg': ['24px', { lineHeight: '28px' }],
+      mono: ['15px', { lineHeight: '22px' }],
+    },
+    letterSpacing: {
+      normal: '0px',
+      micro: '1.2px',
+    },
+    extend: {},
+  },
+  plugins: [],
+};

@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "expo",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "pnpm", "run", "start"],
+      "port": 8081,
+      "url": "http://localhost:8081"
+    }
+  ]
+}

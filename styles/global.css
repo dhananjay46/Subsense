@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Subsense token layer (light mode v1). Source: .claude/skills/subsense-brand/references/tokens.md
+ * Colours are RGB channels so Tailwind can apply opacity: rgb(var(--coral) / <alpha-value>).
+ * lib/tokens.ts mirrors these as hex for APIs that can't take a className. Keep both in sync.
+ */
+:root {
+  /* Canvas and surfaces */
+  --bg: 250 250 247;
+  --bg-raised: 244 240 232;
+  --surface: 255 255 254;
+  --surface-sunken: 240 236 226;
+
+  /* Text */
+  --ink: 22 22 26;
+  --muted: 94 94 102;
+  --subtle: 138 138 148;
+
+  /* Lines */
+  --line: 228 224 216;
+  --line-strong: 207 201 190;
+
+  /* Semantic */
+  --coral: 217 72 42;
+  --coral-soft: 251 228 220;
+  --teal: 11 110 108;
+  --teal-soft: 215 236 235;
+  --amber: 197 140 30;
+  --amber-soft: 247 232 202;
+  --rose: 179 38 30;
+  --rose-soft: 245 217 214;
+}
