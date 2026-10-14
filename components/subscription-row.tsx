@@ -49,7 +49,7 @@ export function SubscriptionRow({
       accessibilityLabel={accessibilityLabel}
       accessibilityHint="Opens details"
       onPress={() => onPress(subscription)}
-      className="flex-row items-center gap-4 py-5">
+      className="flex-row items-center gap-4 overflow-hidden py-5">
       <Monogram subscription={subscription} />
 
       <View className="flex-1 gap-1">
@@ -84,10 +84,15 @@ export function SubscriptionRow({
         )}
       </View>
 
-      <View className="items-end gap-1">
-        <Text variant="mono">{formatMoney(price, currency)}</Text>
-        <Text variant="caption" tone="subtle">
-          {variant === 'compact' ? renewalLabel(renewalDate, now) : `a ${cycleLabel(billingCycle)}`}
+      <View className="flex-row items-center gap-2">
+        <View className="items-end gap-1">
+          <Text variant="mono">{formatMoney(price, currency)}</Text>
+          <Text variant="caption" tone="subtle">
+            {variant === 'compact' ? renewalLabel(renewalDate, now) : `a ${cycleLabel(billingCycle)}`}
+          </Text>
+        </View>
+        <Text variant="title" tone="subtle" aria-hidden={true}>
+          ›
         </Text>
       </View>
     </HapticPressable>
