@@ -96,7 +96,7 @@ export default function Onboarding() {
         <Button
           label="Skip"
           variant="ghost"
-          onPress={() => router.replace('/home')}
+          onPress={() => router.replace('/(tabs)')}
           accessibilityHint="Skip the intro and go to the home screen"
           className="h-11 self-end px-3"
         />
@@ -145,7 +145,7 @@ export default function Onboarding() {
         </View>
 
         {isLast ? (
-          <Button label="Get started" onPress={() => router.replace('/home')} />
+          <Button label="Get started" onPress={() => router.replace('/(tabs)')} />
         ) : (
           <Button label="Next" variant="secondary" onPress={() => goTo(page + 1)} />
         )}

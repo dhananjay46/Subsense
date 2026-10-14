@@ -52,7 +52,7 @@ export default function Home() {
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
       <ScrollView
-        contentContainerClassName="gap-7 px-4 pb-32 pt-4"
+        contentContainerClassName="gap-8 px-4 pb-40 pt-4"
         showsVerticalScrollIndicator={false}>
         <Entrance index={0}>
           <HeaderBar name={loadProfile().name} now={now} />

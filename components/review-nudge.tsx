@@ -26,13 +26,13 @@ export function ReviewNudge({ items, onSelect }: ReviewNudgeProps) {
 
   return (
     <Card padding="none">
-      <View className="gap-1 p-4 pb-3">
+      <View className="gap-1 p-5 pb-3">
         <Text variant="title">Still worth it?</Text>
         <Text variant="caption" tone="muted">
           You haven't checked in on these in a while. One tap to confirm, or open to cancel.
         </Text>
       </View>
-      <View className="px-4">
+      <View className="px-5">
         {items.map((item, i) => (
           <Fragment key={item.id}>
             {i > 0 && <Divider />}

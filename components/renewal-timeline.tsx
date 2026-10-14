@@ -17,7 +17,7 @@ export type RenewalTimelineProps = {
 export function RenewalTimeline({ items, now, onSelect }: RenewalTimelineProps) {
   return (
     <Card padding="none">
-      <View className="px-4">
+      <View className="px-5">
         {items.map((subscription, i) => (
           <Entrance key={subscription.id} index={i}>
             <Fragment>

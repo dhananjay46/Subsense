@@ -58,7 +58,7 @@ export function MonthlyTrend() {
   }
 
   return (
-    <Card className="gap-4">
+    <Card className="gap-5">
       <View className="flex-row items-end justify-between">
         <View>
           <Text variant="title">Monthly trend</Text>
