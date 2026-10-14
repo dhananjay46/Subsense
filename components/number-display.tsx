@@ -12,7 +12,7 @@ import { formatCount, formatINR } from '@/lib/utils';
 
 import { Text, type TextTone, type TextVariant } from './text';
 
-export type NumberDisplaySize = 'xl' | 'lg' | 'md';
+export type NumberDisplaySize = 'xl' | 'lg' | 'md' | 'sm';
 
 export type NumberDisplayProps = {
   value: number;
@@ -31,6 +31,7 @@ const sizeVariant: Record<NumberDisplaySize, TextVariant> = {
   xl: 'display-xl',
   lg: 'display-lg',
   md: 'display-md',
+  sm: 'title-lg',
 };
 
 export function NumberDisplay({

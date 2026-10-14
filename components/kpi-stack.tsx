@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { formatCount, formatINR } from '@/lib/utils';
 import type { DashboardSummary } from '@/types/subscription';
 
-import { Card } from './card';
+import { cardLift } from './card';
 import { NumberDisplay } from './number-display';
 import { Text, type TextTone } from './text';
 
@@ -47,15 +47,15 @@ type KPIProps = {
 
 function KPI({ label, value, currency, tone = 'ink', accessibilityValue }: KPIProps) {
   return (
-    <Card
-      padding="compact"
-      className="flex-1 justify-between gap-3"
+    <View
+      className="flex-1 justify-between gap-3 rounded-xl border border-coral/40 bg-surface p-4"
+      style={cardLift}
       accessible
       accessibilityLabel={`${label}, ${accessibilityValue}`}>
       <Text variant="micro" tone="subtle" numberOfLines={2}>
         {label}
       </Text>
-      <NumberDisplay value={value} currency={currency} size="md" tone={tone} fit />
-    </Card>
+      <NumberDisplay value={value} currency={currency} size="sm" tone={tone} />
+    </View>
   );
 }

@@ -13,7 +13,7 @@ import { useSubscriptionsStore } from '@/lib/subscriptions-store';
 import { entry, radius } from '@/lib/tokens';
 import { formatMoney, monthlyEquivalent } from '@/lib/utils';
 
-import { Card } from './card';
+import { Card, cardLift } from './card';
 import { EmptyState } from './empty-state';
 import { Text } from './text';
 
@@ -58,7 +58,7 @@ export function MonthlyTrend() {
   }
 
   return (
-    <Card className="gap-5">
+    <Card className="gap-5 border-coral/40" style={cardLift}>
       <View className="flex-row items-end justify-between">
         <View>
           <Text variant="title">Monthly trend</Text>

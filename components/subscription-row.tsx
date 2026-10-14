@@ -49,7 +49,7 @@ export function SubscriptionRow({
       accessibilityLabel={accessibilityLabel}
       accessibilityHint="Opens details"
       onPress={() => onPress(subscription)}
-      className="flex-row items-center gap-4 py-4">
+      className="flex-row items-center gap-4 py-5">
       <Monogram subscription={subscription} />
 
       <View className="flex-1 gap-1">

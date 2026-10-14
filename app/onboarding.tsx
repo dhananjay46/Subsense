@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -96,7 +96,7 @@ export default function Onboarding() {
         <Button
           label="Skip"
           variant="ghost"
-          onPress={() => router.replace('/(tabs)')}
+          onPress={() => router.replace('/(tabs)' as Href)}
           accessibilityHint="Skip the intro and go to the home screen"
           className="h-11 self-end px-3"
         />
@@ -145,7 +145,7 @@ export default function Onboarding() {
         </View>
 
         {isLast ? (
-          <Button label="Get started" onPress={() => router.replace('/(tabs)')} />
+          <Button label="Get started" onPress={() => router.replace('/(tabs)' as Href)} />
         ) : (
           <Button label="Next" variant="secondary" onPress={() => goTo(page + 1)} />
         )}
