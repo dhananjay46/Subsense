@@ -4,7 +4,6 @@ import { View } from 'react-native';
 import type { Subscription } from '@/types/subscription';
 
 import { Card, cardLift } from './card';
-import { Entrance } from './entrance';
 import { SubscriptionRow } from './subscription-row';
 
 export type RenewalTimelineProps = {
@@ -24,18 +23,16 @@ export function RenewalTimeline({ items, now, onSelect }: RenewalTimelineProps) 
     <Card padding="none" className="border-coral/40" style={cardLift}>
       <View className="px-5">
         {items.map((subscription, i) => (
-          <Entrance key={subscription.id} index={i}>
-            <Fragment>
-              {i > 0 && (
-                <View
-                  className="h-px bg-line"
-                  style={{ marginLeft: DIVIDER_INSET }}
-                  aria-hidden={true}
-                />
-              )}
-              <SubscriptionRow subscription={subscription} now={now} onPress={onSelect} />
-            </Fragment>
-          </Entrance>
+          <Fragment key={subscription.id}>
+            {i > 0 && (
+              <View
+                className="h-px bg-line"
+                style={{ marginLeft: DIVIDER_INSET }}
+                aria-hidden={true}
+              />
+            )}
+            <SubscriptionRow subscription={subscription} now={now} onPress={onSelect} />
+          </Fragment>
         ))}
       </View>
     </Card>

@@ -45,6 +45,10 @@ module.exports = {
       14: '56px',
       18: '72px',
       24: '96px',
+      32: '128px',
+      40: '160px',
+      44: '176px',
+      48: '192px',
     },
     borderRadius: {
       none: '0px',
