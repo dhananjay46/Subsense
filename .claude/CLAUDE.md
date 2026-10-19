@@ -10,6 +10,9 @@ Subsense is an India-first subscription tracker across six categories: OTT, musi
 5. NEVER use heavy drop shadows. Depth comes from subtle color shifts (surface → surface-raised) and 1px lines.
 6. Every tap gets a haptic. Every screen transition has intent.
 7. No `any` types. No hardcoded colors. No pixel values that aren't on the 4-point grid.
+8. Never change className on an Animated component (`AnimatedView`, `AnimatedPressable`, anything wrapped by `cssInterop`). NativeWind appends rather than replaces, so stale classes bleed in. Give the Animated node a static className and put dynamic visuals on an inner plain View or a style object.
+9. Only use spacing classes that exist in `tailwind.config.js` (the 4-point scale from 0 to 40, plus 44/48). If you need a step the scale doesn't have, add it to the config instead of inlining a pixel value.
+10. No sample data unless the user asked for it. Seeded entries only appear via an explicit "Explore with sample data" action, and each one is flagged `isSample: true` so Settings can remove just those.
 
 ## Stack
 - Expo SDK latest, React Native, TypeScript strict

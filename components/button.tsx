@@ -21,8 +21,8 @@ export type ButtonProps = {
 type VariantStyle = { box: string; text: TextTone; haptic: HapticStrength };
 
 const variantStyle: Record<ButtonVariant, VariantStyle> = {
-  // Primary: coral fill, no border needed — the colour is the signal.
-  primary: { box: 'bg-coral', text: 'surface', haptic: 'medium' },
+  // Primary: coral-fill (stronger than the semantic coral) so white text passes AA.
+  primary: { box: 'bg-coral-fill', text: 'surface', haptic: 'medium' },
   // Secondary: raised surface + strong line, so it reads as a button on any backdrop.
   secondary: {
     box: 'border border-line-strong bg-bg-raised',
@@ -50,6 +50,8 @@ export function Button({
   className,
 }: ButtonProps) {
   const style = variantStyle[variant];
+  // The AnimatedPressable's className is static per instance — variant/size are stable, and
+  // disabled is routed through `style.opacity`, not through a className swap NativeWind would append.
   return (
     <HapticPressable
       haptic={style.haptic}
@@ -59,11 +61,11 @@ export function Button({
       disabled={disabled}
       onPress={onPress}
       pressScale={0.97}
+      style={disabled ? disabledStyle : undefined}
       className={cx(
         'flex-row items-center justify-center',
         sizeStyle[size],
         style.box,
-        disabled && 'opacity-50',
         className,
       )}>
       <Text variant={size === 'compact' ? 'body' : 'title'} tone={style.text}>
@@ -72,3 +74,5 @@ export function Button({
     </HapticPressable>
   );
 }
+
+const disabledStyle = { opacity: 0.5 } as const;

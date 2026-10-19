@@ -8,7 +8,8 @@ import {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { formatCount, formatINR } from '@/lib/utils';
+import type { CurrencyCode } from '@/lib/currencies';
+import { formatCount, formatMoney } from '@/lib/utils';
 
 import { Text, type TextTone, type TextVariant } from './text';
 
@@ -16,7 +17,10 @@ export type NumberDisplaySize = 'xl' | 'lg' | 'md' | 'sm';
 
 export type NumberDisplayProps = {
   value: number;
-  currency?: 'INR' | 'none';
+  /** `currency` renders money (always via formatMoney with an explicit code), `count` renders a plain count. */
+  display?: 'currency' | 'count';
+  /** Required when `display === 'currency'`. */
+  currency?: CurrencyCode;
   size?: NumberDisplaySize;
   tone?: TextTone;
   /** Shrink to fit narrow containers instead of truncating. */
@@ -36,6 +40,7 @@ const sizeVariant: Record<NumberDisplaySize, TextVariant> = {
 
 export function NumberDisplay({
   value,
+  display = 'currency',
   currency = 'INR',
   size = 'lg',
   tone = 'ink',
@@ -63,7 +68,8 @@ export function NumberDisplay({
     },
   );
 
-  const format = currency === 'INR' ? formatINR : formatCount;
+  const format = (n: number) =>
+    display === 'currency' ? formatMoney(n, currency) : formatCount(n);
 
   return (
     <Text

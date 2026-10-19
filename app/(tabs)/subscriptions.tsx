@@ -15,8 +15,10 @@ import { SubscriptionFormSheet } from '@/components/subscription-form-sheet';
 import { SubscriptionRow } from '@/components/subscription-row';
 import { SubscriptionSheet } from '@/components/subscription-sheet';
 import { Text } from '@/components/text';
+import { useScreenBottomPadding } from '@/lib/layout';
 import { categoryOrder } from '@/lib/seed';
 import { useSubscriptionsStore } from '@/lib/subscriptions-store';
+import { useNow } from '@/lib/use-now';
 import { categoryLabel, formatCount } from '@/lib/utils';
 import type { Subscription, SubscriptionCategory } from '@/types/subscription';
 
@@ -58,11 +60,12 @@ const FILTERS: { value: Filter; label: string }[] = [
 ];
 
 export default function Subscriptions() {
-  const [now] = useState(() => new Date());
+  const now = useNow();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const items = useSubscriptionsStore((s) => s.items);
-  const resetToSample = useSubscriptionsStore((s) => s.resetToSample);
+  const loadSampleData = useSubscriptionsStore((s) => s.loadSampleData);
+  const bottomPadding = useScreenBottomPadding();
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -149,7 +152,7 @@ export default function Subscriptions() {
               </Card>
             </View>
           }
-          contentContainerStyle={{ paddingBottom: 160 }}
+          contentContainerStyle={{ paddingBottom: bottomPadding }}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) =>
             item.type === 'header' ? (
@@ -176,8 +179,8 @@ export default function Subscriptions() {
           <Card>
             <EmptyState
               message="Nothing yet. Add your first subscription to see what you're paying for."
-              actionLabel="Add sample subscriptions"
-              onAction={resetToSample}
+              actionLabel="Explore with sample data"
+              onAction={loadSampleData}
             />
           </Card>
         </StatePane>

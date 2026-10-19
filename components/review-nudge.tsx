@@ -4,7 +4,6 @@ import { View } from 'react-native';
 
 import { useSubscriptionsStore } from '@/lib/subscriptions-store';
 import { formatPrice } from '@/lib/utils';
-import type { CurrencyCode } from '@/lib/currencies';
 import type { Subscription } from '@/types/subscription';
 
 import { Card } from './card';
@@ -20,7 +19,6 @@ export type ReviewNudgeProps = {
 /** HMW6 / Theme C: "Is it still worth it?" — surface subscriptions the user hasn't confirmed. */
 export function ReviewNudge({ items, onSelect }: ReviewNudgeProps) {
   const markReviewed = useSubscriptionsStore((s) => s.markReviewed);
-  const currency = useSubscriptionsStore((s) => s.currency);
 
   if (items.length === 0) return null;
 
@@ -29,7 +27,7 @@ export function ReviewNudge({ items, onSelect }: ReviewNudgeProps) {
       <View className="gap-1 p-5 pb-3">
         <Text variant="title">Still worth it?</Text>
         <Text variant="caption" tone="muted">
-          You haven't checked in on these in a while. One tap to confirm, or open to cancel.
+          You haven&apos;t checked in on these in a while. One tap to confirm, or open to cancel.
         </Text>
       </View>
       <View className="px-5">
@@ -38,7 +36,6 @@ export function ReviewNudge({ items, onSelect }: ReviewNudgeProps) {
             {i > 0 && <Divider />}
             <ReviewRow
               item={item}
-              currency={currency}
               onKeep={() => markReviewed(item.id)}
               onOpen={() => onSelect(item)}
             />
@@ -51,12 +48,11 @@ export function ReviewNudge({ items, onSelect }: ReviewNudgeProps) {
 
 type ReviewRowProps = {
   item: Subscription;
-  currency: CurrencyCode;
   onKeep: () => void;
   onOpen: () => void;
 };
 
-function ReviewRow({ item, currency, onKeep, onOpen }: ReviewRowProps) {
+function ReviewRow({ item, onKeep, onOpen }: ReviewRowProps) {
   const lastSeen = item.lastReviewedOn
     ? `Last reviewed ${formatDistanceToNowStrict(item.lastReviewedOn)} ago`
     : 'Never reviewed';
@@ -74,7 +70,7 @@ function ReviewRow({ item, currency, onKeep, onOpen }: ReviewRowProps) {
           {item.name}
         </Text>
         <Text variant="caption" tone="muted" numberOfLines={1}>
-          {formatPrice(item.price, item.billingCycle, currency)} · {lastSeen}
+          {formatPrice(item.price, item.billingCycle, item.currency)} · {lastSeen}
         </Text>
       </HapticPressable>
       <HapticPressable

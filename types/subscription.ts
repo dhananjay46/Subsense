@@ -1,3 +1,5 @@
+import type { CurrencyCode } from '@/lib/currencies';
+
 export type SubscriptionCategory =
   | 'entertainment'
   | 'productivity'
@@ -8,6 +10,7 @@ export type SubscriptionCategory =
 
 export type BillingCycle = 'monthly' | 'quarterly' | 'yearly';
 
+/** 'expiring' is the stored value for the renders-soon state. Keep the type stable. */
 export type SubscriptionStatus = 'active' | 'expiring' | 'paused' | 'trial';
 
 export type Subscription = {
@@ -16,6 +19,8 @@ export type Subscription = {
   planName: string;
   category: SubscriptionCategory;
   price: number;
+  /** The currency this amount is denominated in — never relabel to another currency. */
+  currency: CurrencyCode;
   billingCycle: BillingCycle;
   renewalDate: Date;
   createdAt: Date;
@@ -29,6 +34,8 @@ export type Subscription = {
   owner?: string;
   cancelUrl?: string;
   lastReviewedOn?: Date;
+  /** Flagged on items added via the sample-data action, so Settings can remove just those. */
+  isSample?: boolean;
 };
 
 export type SubscriptionDraft = {
@@ -36,6 +43,7 @@ export type SubscriptionDraft = {
   planName: string;
   category: SubscriptionCategory;
   price: number;
+  currency?: CurrencyCode;
   billingCycle: BillingCycle;
   renewalDate: Date;
   iconLetter?: string;
@@ -47,6 +55,8 @@ export type SubscriptionDraft = {
 
 export type DashboardSummary = {
   monthlySpend: number;
+  /** The currency `monthlySpend` is denominated in; the KPI never renames it. */
+  monthlySpendCurrency: CurrencyCode;
   activeCount: number;
   dueThisWeek: number;
 };

@@ -20,8 +20,6 @@ export type ConfirmSheetProps = {
   onDismiss?: () => void;
 };
 
-const SNAP = ['35%'];
-
 /** Bottom-sheet confirmation — on-brand replacement for native Alert. */
 export function ConfirmSheet({
   ref,
@@ -43,8 +41,9 @@ export function ConfirmSheet({
     dismiss();
   };
 
+  // Dynamic size — a confirm never needs more than its own content.
   return (
-    <Sheet ref={ref} snapPoints={SNAP} accessibilityLabel={title} onDismiss={onDismiss}>
+    <Sheet ref={ref} accessibilityLabel={title} onDismiss={onDismiss}>
       <View className="gap-5">
         <View className="gap-2">
           <Text variant="display-md" accessibilityRole="header">

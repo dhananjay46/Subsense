@@ -15,7 +15,17 @@ export type TextVariant =
   | 'mono-lg'
   | 'mono';
 
-export type TextTone = 'ink' | 'muted' | 'subtle' | 'coral' | 'teal' | 'amber' | 'rose' | 'surface';
+export type TextTone =
+  | 'ink'
+  | 'muted'
+  | 'subtle'
+  | 'coral'
+  | 'coral-ink'
+  | 'teal'
+  | 'amber'
+  | 'amber-ink'
+  | 'rose'
+  | 'surface';
 
 export type TextProps = RNTextProps & {
   variant?: TextVariant;
@@ -42,8 +52,10 @@ const toneClass: Record<TextTone, string> = {
   muted: 'text-muted',
   subtle: 'text-subtle',
   coral: 'text-coral',
+  'coral-ink': 'text-coral-ink',
   teal: 'text-teal',
   amber: 'text-amber',
+  'amber-ink': 'text-amber-ink',
   rose: 'text-rose',
   surface: 'text-surface',
 };

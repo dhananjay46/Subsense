@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { addDays, differenceInCalendarDays, isAfter, startOfDay, subDays } from 'date-fns';
+import { differenceInCalendarDays, isAfter, subDays } from 'date-fns';
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -13,6 +13,7 @@ import type {
   SubscriptionStatus,
 } from '@/types/subscription';
 
+import { nextChargeDate, RENEWS_SOON_WITHIN_DAYS } from './billing';
 import type { CurrencyCode } from './currencies';
 import { seedSubscriptions } from './seed';
 import { monthlyEquivalent } from './utils';
@@ -25,6 +26,7 @@ type Serialised = Omit<Subscription, 'renewalDate' | 'createdAt' | 'lastReviewed
 
 export type SubscriptionsState = {
   items: Subscription[];
+  /** Default currency used for *new* subscriptions. Existing items keep their own currency. */
   currency: CurrencyCode;
   hasHydrated: boolean;
   add: (draft: SubscriptionDraft) => Subscription;
@@ -33,11 +35,14 @@ export type SubscriptionsState = {
   togglePause: (id: string) => void;
   markReviewed: (id: string) => void;
   setCurrency: (code: CurrencyCode) => void;
-  resetToSample: () => void;
+  /** Explicit action — adds the seeded set and flags each item as sample. */
+  loadSampleData: () => void;
+  /** Removes items flagged `isSample`, leaving the user's own entries alone. */
+  removeSampleData: () => void;
   clear: () => void;
 };
 
-const EXPIRING_WITHIN_DAYS = 7;
+const EXPIRING_WITHIN_DAYS = RENEWS_SOON_WITHIN_DAYS;
 export const REVIEW_STALE_DAYS = 90;
 
 const ICON_COLORS = ['coral', 'teal', 'amber', 'rose', 'ink'] as const;
@@ -75,6 +80,8 @@ function serialise(s: Subscription): Serialised {
 function hydrate(s: Serialised): Subscription {
   return {
     ...s,
+    // Legacy records predate the per-item currency field; INR is the only shipped currency.
+    currency: s.currency ?? 'INR',
     renewalDate: new Date(s.renewalDate),
     createdAt: new Date(s.createdAt),
     lastReviewedOn: s.lastReviewedOn ? new Date(s.lastReviewedOn) : undefined,
@@ -95,6 +102,8 @@ export const useSubscriptionsStore = create<SubscriptionsState>()(
           planName: draft.planName,
           category: draft.category,
           price: draft.price,
+          // Each item carries the currency it was captured in; defaults to the store's current default.
+          currency: draft.currency ?? get().currency,
           billingCycle: draft.billingCycle,
           renewalDate: draft.renewalDate,
           createdAt: now,
@@ -150,13 +159,19 @@ export const useSubscriptionsStore = create<SubscriptionsState>()(
         });
       },
       setCurrency: (currency) => set({ currency }),
-      resetToSample: () => set({ items: seedSubscriptions(new Date()) }),
+      loadSampleData: () => {
+        // Append rather than replace, so a user who already added their own data keeps it.
+        const existing = get().items;
+        const sampleIds = new Set(existing.filter((s) => s.isSample).map((s) => s.id));
+        const incoming = seedSubscriptions(new Date()).filter((s) => !sampleIds.has(s.id));
+        set({ items: [...existing, ...incoming] });
+      },
+      removeSampleData: () => set({ items: get().items.filter((s) => !s.isSample) }),
       clear: () => set({ items: [] }),
     }),
     {
-      // v2: Subscription shape changed (plan→planName, cycle→billingCycle, renewsOn→renewalDate,
-      // added iconLetter/iconColor/createdAt). Reset existing installs cleanly.
-      name: 'subsense.subscriptions.v2',
+      // v3: added `currency` and `isSample` per item; empty accounts stay empty on hydrate.
+      name: 'subsense.subscriptions.v3',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         items: state.items.map(serialise),
@@ -164,8 +179,7 @@ export const useSubscriptionsStore = create<SubscriptionsState>()(
       }),
       merge: (persisted, current) => {
         const payload = persisted as { items?: Serialised[]; currency?: CurrencyCode } | undefined;
-        const raw = payload?.items ?? [];
-        const items = raw.length > 0 ? raw.map(hydrate) : seedSubscriptions(new Date());
+        const items = (payload?.items ?? []).map(hydrate);
         return {
           ...current,
           items,
@@ -174,35 +188,43 @@ export const useSubscriptionsStore = create<SubscriptionsState>()(
         };
       },
       onRehydrateStorage: () => (state) => {
-        if (state && state.items.length === 0) {
-          state.items = seedSubscriptions(new Date());
-        }
         if (state) state.hasHydrated = true;
       },
     },
   ),
 );
 
-export function selectDashboard(items: Subscription[], now: Date): Dashboard {
+export function selectDashboard(
+  items: Subscription[],
+  now: Date,
+  primaryCurrency: CurrencyCode,
+): Dashboard {
   const active = items.filter((s) => s.status !== 'paused');
+  // Only sum items in the primary currency — never relabel foreign amounts in it.
+  const inPrimary = active.filter((s) => s.currency === primaryCurrency);
   const monthlySpend = Math.round(
-    active.reduce((sum, s) => sum + monthlyEquivalent(s.price, s.billingCycle), 0),
+    inPrimary.reduce((sum, s) => sum + monthlyEquivalent(s.price, s.billingCycle), 0),
   );
+  // Status derivations use the *next* charge rolled forward — a stored anchor from last month
+  // doesn't mislabel today's state.
   const dueThisWeek = active.filter((s) => {
-    const days = differenceInCalendarDays(s.renewalDate, now);
+    const days = differenceInCalendarDays(nextChargeDate(s.renewalDate, s.billingCycle, now), now);
     return days >= 0 && days <= EXPIRING_WITHIN_DAYS;
   }).length;
 
   const summary: DashboardSummary = {
     monthlySpend,
+    monthlySpendCurrency: primaryCurrency,
     activeCount: active.length,
     dueThisWeek,
   };
 
   const upcoming = [...active]
-    .filter((s) => isAfter(s.renewalDate, startOfDay(addDays(now, -1))))
-    .sort((a, b) => a.renewalDate.getTime() - b.renewalDate.getTime())
-    .slice(0, 5);
+    .map((s) => ({ sub: s, due: nextChargeDate(s.renewalDate, s.billingCycle, now) }))
+    .sort((a, b) => a.due.getTime() - b.due.getTime())
+    .slice(0, 5)
+    // Reflect the rolled-forward date on the item itself so timeline rows read as "today/tomorrow".
+    .map(({ sub, due }) => ({ ...sub, renewalDate: due }));
 
   const reviewCutoff = subDays(now, REVIEW_STALE_DAYS);
   const needsReview = active
@@ -229,5 +251,6 @@ export function selectByCategory(items: Subscription[]) {
 
 export function useDashboard(now: Date): Dashboard {
   const items = useSubscriptionsStore((s) => s.items);
-  return useMemo(() => selectDashboard(items, now), [items, now]);
+  const currency = useSubscriptionsStore((s) => s.currency);
+  return useMemo(() => selectDashboard(items, now, currency), [items, now, currency]);
 }

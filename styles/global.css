@@ -17,19 +17,27 @@
   /* Text */
   --ink: 22 22 26;
   --muted: 94 94 102;
-  --subtle: 138 138 148;
+  --subtle: 107 107 116;
 
   /* Lines */
   --line: 228 224 216;
   --line-strong: 207 201 190;
+  /* Border on inputs and unselected chips — AA against the warm canvas. */
+  --line-control: 138 130 118;
 
   /* Semantic */
   --coral: 217 72 42;
   --coral-soft: 251 228 220;
+  /* Text and glyphs that sit on coral-soft; the normal coral fails AA on it. */
+  --coral-ink: 168 52 26;
+  /* Primary button fill — stronger than coral so Add/Save pass AA on white. */
+  --coral-fill: 193 60 32;
   --teal: 11 110 108;
   --teal-soft: 215 236 235;
   --amber: 197 140 30;
   --amber-soft: 247 232 202;
+  /* Text and glyphs that sit on amber-soft. */
+  --amber-ink: 122 82 0;
   --rose: 179 38 30;
   --rose-soft: 245 217 214;
 }

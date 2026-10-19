@@ -1,9 +1,5 @@
-import {
-  BottomSheetScrollView,
-  BottomSheetTextInput,
-  type BottomSheetModal,
-} from '@gorhom/bottom-sheet';
-import { addMonths, addWeeks, format } from 'date-fns';
+import { BottomSheetTextInput, type BottomSheetModal } from '@gorhom/bottom-sheet';
+import { addMonths, addYears, format } from 'date-fns';
 import { forwardRef, useEffect, useRef, useState, type Ref } from 'react';
 import { View } from 'react-native';
 
@@ -44,7 +40,7 @@ const CYCLE_LABEL: Record<BillingCycle, string> = {
   quarterly: 'Quarterly',
   yearly: 'Yearly',
 };
-const SNAP = ['92%'];
+const FORM_SNAP = ['92%'];
 const DAY_PRESETS = [1, 3, 7, 14, 30] as const;
 const OWNER_PRESETS = ['Me', 'Shared with family'] as const;
 
@@ -110,23 +106,20 @@ function parseDraft(form: FormState): SubscriptionDraft | null {
 export const SubscriptionFormSheet = forwardRef<BottomSheetModal, SubscriptionFormSheetProps>(
   function SubscriptionFormSheet({ existing, onDismiss }, ref) {
     return (
-      <Sheet
-        ref={ref}
-        accessibilityLabel={existing ? 'Edit subscription' : 'Add subscription'}
-        snapPoints={SNAP}
-        onDismiss={onDismiss}>
-        <FormBody existing={existing} dismissRef={ref} />
-      </Sheet>
+      <FormSheetHost ref={ref} existing={existing} onDismiss={onDismiss} />
     );
   },
 );
 
-type FormBodyProps = {
+type FormSheetHostProps = {
   existing: Subscription | null;
-  dismissRef: Ref<BottomSheetModal>;
+  onDismiss?: () => void;
 };
 
-function FormBody({ existing, dismissRef }: FormBodyProps) {
+const FormSheetHost = forwardRef<BottomSheetModal, FormSheetHostProps>(function FormSheetHost(
+  { existing, onDismiss },
+  ref,
+) {
   const add = useSubscriptionsStore((s) => s.add);
   const update = useSubscriptionsStore((s) => s.update);
   const [form, setForm] = useState<FormState>(() => toForm(existing));
@@ -140,7 +133,7 @@ function FormBody({ existing, dismissRef }: FormBodyProps) {
   }, [existing]);
 
   const dismiss = () => {
-    const node = dismissRef as { current: BottomSheetModal | null } | null;
+    const node = ref as { current: BottomSheetModal | null } | null;
     node?.current?.dismiss();
   };
 
@@ -158,16 +151,50 @@ function FormBody({ existing, dismissRef }: FormBodyProps) {
     dismiss();
   };
 
+  const footer = (
+    <View className="flex-row gap-3">
+      <View className="flex-1">
+        <Button label="Cancel" variant="secondary" onPress={dismiss} />
+      </View>
+      <View className="flex-1">
+        <Button
+          label={existing ? 'Save' : 'Add subscription'}
+          onPress={onSave}
+          disabled={!canSave}
+          accessibilityHint="Saves this subscription"
+        />
+      </View>
+    </View>
+  );
+
   return (
-    <BottomSheetScrollView
-      contentContainerStyle={{ gap: 20, paddingBottom: 24 }}
-      keyboardShouldPersistTaps="handled">
+    <Sheet
+      ref={ref}
+      accessibilityLabel={existing ? 'Edit subscription' : 'Add subscription'}
+      snapPoints={FORM_SNAP}
+      scrollable
+      footer={footer}
+      onDismiss={onDismiss}>
+      <FormBody form={form} setForm={setForm} existing={existing} />
+    </Sheet>
+  );
+});
+
+type FormBodyProps = {
+  form: FormState;
+  setForm: (updater: (prev: FormState) => FormState) => void;
+  existing: Subscription | null;
+};
+
+function FormBody({ form, setForm, existing }: FormBodyProps) {
+  return (
+    <View className="gap-5">
       <View className="gap-1">
         <Text variant="display-md" accessibilityRole="header">
           {existing ? 'Edit subscription' : 'Add subscription'}
         </Text>
         <Text variant="body" tone="muted">
-          A few details and we'll track the next renewal for you.
+          A few details and we&apos;ll track the next renewal for you.
         </Text>
       </View>
 
@@ -261,7 +288,7 @@ function FormBody({ existing, dismissRef }: FormBodyProps) {
           />
           <Chip
             label="+1 year"
-            onPress={() => setForm((f) => ({ ...f, renewalDate: addWeeks(new Date(), 52) }))}
+            onPress={() => setForm((f) => ({ ...f, renewalDate: addYears(new Date(), 1) }))}
           />
         </View>
       </Field>
@@ -300,20 +327,7 @@ function FormBody({ existing, dismissRef }: FormBodyProps) {
         />
       </Field>
 
-      <View className="flex-row gap-3 pt-2">
-        <View className="flex-1">
-          <Button label="Cancel" variant="secondary" onPress={dismiss} />
-        </View>
-        <View className="flex-1">
-          <Button
-            label={existing ? 'Save' : 'Add subscription'}
-            onPress={onSave}
-            disabled={!canSave}
-            accessibilityHint="Saves this subscription"
-          />
-        </View>
-      </View>
-    </BottomSheetScrollView>
+    </View>
   );
 }
 

@@ -1,6 +1,5 @@
 import { View } from 'react-native';
 
-import { useSubscriptionsStore } from '@/lib/subscriptions-store';
 import {
   categoryLabel,
   cycleLabel,
@@ -32,8 +31,9 @@ export function SubscriptionRow({
   variant = 'compact',
   onPress,
 }: SubscriptionRowProps) {
-  const currency = useSubscriptionsStore((s) => s.currency);
-  const { name, planName, price, billingCycle, renewalDate, category, status } = subscription;
+  // Each subscription carries its own currency — never relabel into the store's default.
+  const { name, planName, price, currency, billingCycle, renewalDate, category, status } =
+    subscription;
   const accessibilityLabel = [
     name,
     formatPrice(price, billingCycle, currency),

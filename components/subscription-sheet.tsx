@@ -1,8 +1,8 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { differenceInCalendarDays, format } from 'date-fns';
 import * as WebBrowser from 'expo-web-browser';
-import { useRef, type Ref } from 'react';
-import { Alert, View } from 'react-native';
+import { useRef, useState, type Ref } from 'react';
+import { View } from 'react-native';
 
 import { triggerHaptic } from '@/lib/haptics';
 import { useSubscriptionsStore } from '@/lib/subscriptions-store';
@@ -36,8 +36,11 @@ export function SubscriptionSheet({
   const remove = useSubscriptionsStore((s) => s.remove);
   const togglePause = useSubscriptionsStore((s) => s.togglePause);
   const markReviewed = useSubscriptionsStore((s) => s.markReviewed);
-  const currency = useSubscriptionsStore((s) => s.currency);
   const confirmRef = useRef<BottomSheetModal>(null);
+  // Keyed by subscription id so switching subscriptions implicitly clears the notice
+  // without a state-setting effect.
+  const [notice, setNotice] = useState<{ id: string; text: string } | null>(null);
+  const activeNotice = notice && subscription && notice.id === subscription.id ? notice.text : null;
 
   const openDeleteConfirm = () => {
     if (!subscription) return;
@@ -62,10 +65,11 @@ export function SubscriptionSheet({
     try {
       await WebBrowser.openBrowserAsync(subscription.cancelUrl);
     } catch {
-      Alert.alert(
-        'Could not open the cancel page',
-        "The provider's cancel link didn't open. Try again, or do it from their app.",
-      );
+      // In-app notice replaces Alert.alert so this works on web too.
+      setNotice({
+        id: subscription.id,
+        text: "The provider's cancel link didn't open. Try again, or do it from their app.",
+      });
     }
   };
 
@@ -80,6 +84,7 @@ export function SubscriptionSheet({
       <Sheet
         ref={ref}
         snapPoints={DETAIL_SNAP}
+        scrollable
         accessibilityLabel={subscription ? `${subscription.name} details` : 'Subscription details'}>
         {subscription && (
           <View className="gap-5">
@@ -98,7 +103,9 @@ export function SubscriptionSheet({
 
             <View className="flex-row items-end justify-between">
               <View className="flex-row items-baseline gap-2">
-                <Text variant="mono-lg">{formatMoney(subscription.price, currency)}</Text>
+                <Text variant="mono-lg">
+                  {formatMoney(subscription.price, subscription.currency)}
+                </Text>
                 <Text variant="caption" tone="subtle">
                   a {cycleLabel(subscription.billingCycle)}
                 </Text>
@@ -139,6 +146,16 @@ export function SubscriptionSheet({
                   : 'Never'
               }
             />
+
+            {activeNotice ? (
+              <View
+                accessibilityRole="alert"
+                className="rounded-md border border-amber-soft bg-amber-soft p-4">
+                <Text variant="caption" tone="amber-ink">
+                  {activeNotice}
+                </Text>
+              </View>
+            ) : null}
 
             <View className="gap-3 pt-2">
               <Button label="Still worth it" onPress={onKeepIt} />
@@ -218,11 +235,11 @@ function TrialCallout({ renewsOn, now }: TrialCalloutProps) {
     days === 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days (${format(renewsOn, 'd MMM')})`;
   return (
     <View className="rounded-md border border-coral-soft bg-coral-soft p-4">
-      <Text variant="caption" tone="coral">
+      <Text variant="caption" tone="coral-ink">
         TRIAL CONVERTS {when.toUpperCase()}
       </Text>
       <Text variant="body" tone="ink" className="pt-1">
-        You'll be charged automatically unless you cancel first.
+        You&apos;ll be charged automatically unless you cancel first.
       </Text>
     </View>
   );
