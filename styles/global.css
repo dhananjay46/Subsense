@@ -41,3 +41,56 @@
   --rose: 179 38 30;
   --rose-soft: 245 217 214;
 }
+
+/*
+ * Web-only phone frame. Subsense is designed for a 390pt column; on a
+ * desktop viewport the whole app would otherwise stretch to 1920px and
+ * look empty. Media query so native builds (where this CSS is compiled
+ * to StyleSheet) ignore it entirely.
+ *
+ * Depth stays flat per golden rule #5 — one line, two surface tints.
+ */
+html,
+body {
+  background-color: rgb(var(--bg));
+}
+
+/*
+ * Mobile browser viewport. Expo's reset sizes html/body/#root at 100%, which
+ * uses the layout viewport height — on iOS Safari that includes the collapsing
+ * URL bar, so content under the FAB is clipped behind browser chrome. 100dvh
+ * is the dynamic viewport that excludes retracted chrome; it moves with the
+ * bar. overflow-x: hidden kills horizontal bleed from any off-screen Reanimated
+ * measurement (onboarding carousel, bottom sheets).
+ */
+@media (max-width: 479px) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+  html {
+    overflow-x: hidden;
+  }
+}
+
+@media (min-width: 480px) {
+  html,
+  body {
+    background-color: rgb(var(--bg-raised));
+  }
+  /* Expo's own reset sets body{overflow:hidden}; override so wide viewports can scroll if the frame grows. */
+  body {
+    overflow: auto !important;
+  }
+  #root {
+    max-width: 420px;
+    margin: 24px auto;
+    height: calc(100vh - 48px);
+    background-color: rgb(var(--bg));
+    border: 1px solid rgb(var(--line));
+    border-radius: 32px;
+    overflow: hidden;
+  }
+}

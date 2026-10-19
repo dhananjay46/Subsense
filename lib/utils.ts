@@ -87,9 +87,11 @@ export function renewsPhrase(date: Date, now: Date): string {
 
 export function greeting(now: Date): string {
   const hour = now.getHours();
+  if (hour < 5) return 'Good night';
   if (hour < 12) return 'Good morning';
   if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (hour < 21) return 'Good evening';
+  return 'Good night';
 }
 
 export const categoryLabel: Record<SubscriptionCategory, string> = {

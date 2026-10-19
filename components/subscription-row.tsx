@@ -22,6 +22,8 @@ export type SubscriptionRowProps = {
   now: Date;
   /** compact: plan + relative date (timeline). detailed: category and status chips (list). */
   variant?: SubscriptionRowVariant;
+  /** When the row lives inside a category-grouped section, the category chip is redundant. */
+  showCategoryChip?: boolean;
   onPress: (subscription: Subscription) => void;
 };
 
@@ -29,6 +31,7 @@ export function SubscriptionRow({
   subscription,
   now,
   variant = 'compact',
+  showCategoryChip = true,
   onPress,
 }: SubscriptionRowProps) {
   // Each subscription carries its own currency — never relabel into the store's default.
@@ -66,7 +69,7 @@ export function SubscriptionRow({
               {renewsPhrase(renewalDate, now)}
             </Text>
             <View className="flex-row flex-wrap gap-2 pt-1">
-              <Chip label={categoryLabel[category]} />
+              {showCategoryChip && <Chip label={categoryLabel[category]} />}
               <Chip
                 label={statusLabel[status]}
                 tone={
