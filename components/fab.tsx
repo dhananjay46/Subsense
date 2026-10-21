@@ -1,6 +1,7 @@
-import { Platform, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { TAB_BAR_BASE } from '@/lib/layout';
 import { cx } from '@/lib/utils';
 
 import { HapticPressable } from './haptic-pressable';
@@ -15,8 +16,6 @@ export type FABProps = {
   className?: string;
 };
 
-/** Keep in sync with tabBarStyle.height in app/(tabs)/_layout.tsx. */
-const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 84 : 64;
 const CLEARANCE_ABOVE_BAR = 16;
 
 /** Floating primary action — coral pill, warm shadow via line, never a drop shadow. */
@@ -28,8 +27,10 @@ export function FAB({
   className,
 }: FABProps) {
   const insets = useSafeAreaInsets();
-  // On a tab screen the tab bar already pads itself with insets.bottom, so just clear its full height.
-  const bottom = liftAboveTabs ? TAB_BAR_HEIGHT + CLEARANCE_ABOVE_BAR : insets.bottom + 16;
+  // Tab-bar height is derived from the safe-area inset, so the FAB sits an even clearance above.
+  const bottom = liftAboveTabs
+    ? TAB_BAR_BASE + insets.bottom + CLEARANCE_ABOVE_BAR
+    : insets.bottom + 16;
 
   return (
     <View pointerEvents="box-none" style={[styles.container, { bottom }]} className={cx(className)}>
@@ -40,7 +41,7 @@ export function FAB({
         accessibilityHint={accessibilityHint}
         onPress={onPress}
         pressScale={0.96}
-        className="h-14 flex-row items-center justify-center rounded-pill border border-coral bg-coral px-6"
+        className="h-14 flex-row items-center justify-center rounded-pill border border-coral-fill bg-coral-fill px-6"
         enforceMinSize={false}>
         <Text variant="title" tone="surface">
           + {label}

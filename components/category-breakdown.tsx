@@ -10,7 +10,7 @@ import Animated, {
 
 import { categoryOrder } from '@/lib/seed';
 import { useSubscriptionsStore } from '@/lib/subscriptions-store';
-import { entry, timing } from '@/lib/tokens';
+import { entry } from '@/lib/tokens';
 import { categoryLabel, formatMoney, monthlyEquivalent } from '@/lib/utils';
 import type { SubscriptionCategory } from '@/types/subscription';
 
@@ -32,7 +32,8 @@ export function CategoryBreakdown() {
   const currency = useSubscriptionsStore((s) => s.currency);
 
   const rows = useMemo<Row[]>(() => {
-    const active = items.filter((s) => s.status !== 'paused');
+    // Only items in the primary currency contribute — never mix currencies in a sum.
+    const active = items.filter((s) => s.status !== 'paused' && s.currency === currency);
     const totals = new Map<SubscriptionCategory, number>();
     for (const sub of active) {
       const monthly = monthlyEquivalent(sub.price, sub.billingCycle);
@@ -47,7 +48,7 @@ export function CategoryBreakdown() {
       }))
       .filter((row) => row.spend > 0)
       .sort((a, b) => b.spend - a.spend);
-  }, [items]);
+  }, [items, currency]);
 
   if (rows.length === 0) {
     return (

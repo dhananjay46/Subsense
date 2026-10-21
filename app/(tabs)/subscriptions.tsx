@@ -1,12 +1,10 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { FlashList } from '@shopify/flash-list';
-import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { Fragment, useMemo, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card } from '@/components/card';
 import { Chip } from '@/components/chip';
-import { Divider } from '@/components/divider';
 import { EmptyState } from '@/components/empty-state';
 import { FAB } from '@/components/fab';
 import { ScreenHeader } from '@/components/screen-header';
@@ -15,35 +13,12 @@ import { SubscriptionFormSheet } from '@/components/subscription-form-sheet';
 import { SubscriptionRow } from '@/components/subscription-row';
 import { SubscriptionSheet } from '@/components/subscription-sheet';
 import { Text } from '@/components/text';
+import { useScreenBottomPadding } from '@/lib/layout';
 import { categoryOrder } from '@/lib/seed';
 import { useSubscriptionsStore } from '@/lib/subscriptions-store';
+import { useNow } from '@/lib/use-now';
 import { categoryLabel, formatCount } from '@/lib/utils';
 import type { Subscription, SubscriptionCategory } from '@/types/subscription';
-
-type ListItem =
-  | { type: 'header'; key: string; title: string }
-  | { type: 'row'; key: string; subscription: Subscription; isLastInGroup: boolean };
-
-function toListItems(subscriptions: Subscription[], order: SubscriptionCategory[]): ListItem[] {
-  return order.flatMap((category) => {
-    const group = subscriptions
-      .filter((s) => s.category === category)
-      .sort((a, b) => a.renewalDate.getTime() - b.renewalDate.getTime());
-    if (group.length === 0) return [];
-    const header: ListItem = {
-      type: 'header',
-      key: `header-${category}`,
-      title: categoryLabel[category],
-    };
-    const rows = group.map<ListItem>((subscription, i) => ({
-      type: 'row',
-      key: subscription.id,
-      subscription,
-      isLastInGroup: i === group.length - 1,
-    }));
-    return [header, ...rows];
-  });
-}
 
 type Filter = SubscriptionCategory | 'all';
 
@@ -57,12 +32,32 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: 'other', label: 'Other' },
 ];
 
+/** Aligns the hairline under the row title, past monogram (44) + gap-4 (16). Mirrors RenewalTimeline. */
+const DIVIDER_INSET = 60;
+
+type Group = { category: SubscriptionCategory; items: Subscription[] };
+
+function groupByCategory(
+  subscriptions: Subscription[],
+  order: SubscriptionCategory[],
+): Group[] {
+  return order
+    .map<Group>((category) => ({
+      category,
+      items: subscriptions
+        .filter((s) => s.category === category)
+        .sort((a, b) => a.renewalDate.getTime() - b.renewalDate.getTime()),
+    }))
+    .filter((g) => g.items.length > 0);
+}
+
 export default function Subscriptions() {
-  const [now] = useState(() => new Date());
+  const now = useNow();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const items = useSubscriptionsStore((s) => s.items);
-  const resetToSample = useSubscriptionsStore((s) => s.resetToSample);
+  const loadSampleData = useSubscriptionsStore((s) => s.loadSampleData);
+  const bottomPadding = useScreenBottomPadding();
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -73,9 +68,9 @@ export default function Subscriptions() {
     });
   }, [items, query, filter]);
 
-  const listOrder = useMemo<SubscriptionCategory[]>(
-    () => (filter === 'all' ? categoryOrder : [filter]),
-    [filter],
+  const groups = useMemo<Group[]>(
+    () => groupByCategory(filtered, filter === 'all' ? categoryOrder : [filter]),
+    [filtered, filter],
   );
 
   const detailRef = useRef<BottomSheetModal>(null);
@@ -103,85 +98,90 @@ export default function Subscriptions() {
     ? `${formatCount(filtered.length)} of ${formatCount(items.length)} match`
     : `${formatCount(items.length)} subscriptions`;
 
-  const header = (
-    <View className="gap-4">
-      <ScreenHeader title="Subscriptions" subtitle={subtitle} />
-      {items.length > 0 ? (
-        <>
-          <SearchBar value={query} onChange={setQuery} placeholder="Search Netflix, Notion…" />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8 }}>
-            {FILTERS.map((option) => (
-              <Chip
-                key={option.value}
-                label={option.label}
-                selected={filter === option.value}
-                onPress={() => setFilter(option.value)}
-                accessibilityLabel={`Filter by ${option.label}`}
-              />
-            ))}
-          </ScrollView>
-        </>
-      ) : null}
-    </View>
-  );
+  // When a specific filter is active, the chip row above already names the category — the
+  // section label becomes redundant noise.
+  const showSectionLabels = filter === 'all';
 
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
-      {items.length > 0 ? (
-        <FlashList
-          data={toListItems(filtered, listOrder)}
-          keyExtractor={(item) => item.key}
-          getItemType={(item) => item.type}
-          ListHeaderComponent={<View className="px-4 pt-4">{header}</View>}
-          ListEmptyComponent={
-            <View className="px-4 pt-6">
-              <Card>
-                <EmptyState
-                  message={
-                    query.trim()
-                      ? `Nothing matches "${query.trim()}". Try a different word.`
-                      : `Nothing in ${filter === 'all' ? 'this view' : categoryLabel[filter]} yet.`
-                  }
+      <ScrollView
+        contentContainerClassName="gap-6 px-4 pt-4"
+        contentContainerStyle={{ paddingBottom: bottomPadding }}
+        showsVerticalScrollIndicator={false}>
+        <ScreenHeader title="Subscriptions" subtitle={subtitle} />
+
+        {items.length > 0 ? (
+          <>
+            <SearchBar value={query} onChange={setQuery} placeholder="Search Netflix, Notion…" />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingVertical: 2 }}>
+              {FILTERS.map((option) => (
+                <Chip
+                  key={option.value}
+                  label={option.label}
+                  selected={filter === option.value}
+                  onPress={() => setFilter(option.value)}
+                  accessibilityLabel={`Filter by ${option.label}`}
                 />
-              </Card>
-            </View>
-          }
-          contentContainerStyle={{ paddingBottom: 160 }}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) =>
-            item.type === 'header' ? (
-              <View className="px-4 pb-1 pt-8">
-                <Text variant="micro" tone="subtle" accessibilityRole="header">
-                  {item.title}
-                </Text>
-              </View>
-            ) : (
-              <View className="px-4">
-                <SubscriptionRow
-                  subscription={item.subscription}
-                  now={now}
-                  variant="detailed"
-                  onPress={openDetail}
-                />
-                {!item.isLastInGroup && <Divider />}
-              </View>
-            )
-          }
-        />
-      ) : (
-        <StatePane header={header}>
+              ))}
+            </ScrollView>
+          </>
+        ) : null}
+
+        {items.length === 0 ? (
           <Card>
             <EmptyState
               message="Nothing yet. Add your first subscription to see what you're paying for."
-              actionLabel="Add sample subscriptions"
-              onAction={resetToSample}
+              actionLabel="Explore with sample data"
+              onAction={loadSampleData}
             />
           </Card>
-        </StatePane>
-      )}
+        ) : groups.length === 0 ? (
+          <Card>
+            <EmptyState
+              message={
+                query.trim()
+                  ? `Nothing matches "${query.trim()}". Try a different word.`
+                  : `Nothing in ${filter === 'all' ? 'this view' : categoryLabel[filter]} yet.`
+              }
+            />
+          </Card>
+        ) : (
+          groups.map((group) => (
+            <View key={group.category} className="gap-3">
+              {showSectionLabels ? (
+                <Text variant="micro" tone="subtle" accessibilityRole="header">
+                  {categoryLabel[group.category]}
+                </Text>
+              ) : null}
+              <Card padding="none">
+                <View className="px-5">
+                  {group.items.map((subscription, i) => (
+                    <Fragment key={subscription.id}>
+                      {i > 0 && (
+                        <View
+                          className="h-px bg-line"
+                          style={{ marginLeft: DIVIDER_INSET }}
+                          aria-hidden={true}
+                        />
+                      )}
+                      <SubscriptionRow
+                        subscription={subscription}
+                        now={now}
+                        variant="detailed"
+                        showCategoryChip={false}
+                        onPress={openDetail}
+                      />
+                    </Fragment>
+                  ))}
+                </View>
+              </Card>
+            </View>
+          ))
+        )}
+      </ScrollView>
 
       <FAB label="Add" onPress={openAdd} accessibilityHint="Add a new subscription" />
 
@@ -198,16 +198,5 @@ export default function Subscriptions() {
         onDismiss={() => setEditing(null)}
       />
     </SafeAreaView>
-  );
-}
-
-type StatePaneProps = { header: ReactNode; children: ReactNode };
-
-function StatePane({ header, children }: StatePaneProps) {
-  return (
-    <View className="flex-1 gap-8 px-4 pt-4">
-      {header}
-      {children}
-    </View>
   );
 }

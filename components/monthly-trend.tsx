@@ -36,15 +36,19 @@ export function MonthlyTrend() {
     return Array.from({ length: MONTHS }, (_, i) => {
       const month = subMonths(now, MONTHS - 1 - i);
       const endOfThisMonth = endOfMonth(month);
+      // Only items in the primary currency contribute — the trend reads as a single-currency total.
       const active = items.filter(
-        (s) => s.status !== 'paused' && !isAfter(s.createdAt, endOfThisMonth),
+        (s) =>
+          s.status !== 'paused' &&
+          s.currency === currency &&
+          !isAfter(s.createdAt, endOfThisMonth),
       );
       const value = Math.round(
         active.reduce((sum, s) => sum + monthlyEquivalent(s.price, s.billingCycle), 0),
       );
       return { label: format(month, 'MMM'), value };
     });
-  }, [items]);
+  }, [items, currency]);
 
   const max = Math.max(...bars.map((b) => b.value), 1);
   const peakMonth = bars.reduce((a, b) => (b.value > a.value ? b : a), bars[0]);

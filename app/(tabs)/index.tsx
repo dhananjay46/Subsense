@@ -17,16 +17,19 @@ import { ReviewNudge } from '@/components/review-nudge';
 import { SubscriptionFormSheet } from '@/components/subscription-form-sheet';
 import { SubscriptionSheet } from '@/components/subscription-sheet';
 import { Text } from '@/components/text';
+import { useScreenBottomPadding } from '@/lib/layout';
 import { loadProfile } from '@/lib/seed';
 import { useDashboard, useSubscriptionsStore } from '@/lib/subscriptions-store';
+import { useNow } from '@/lib/use-now';
 import { greeting } from '@/lib/utils';
 import type { Subscription } from '@/types/subscription';
 
 export default function Home() {
-  const [now] = useState(() => new Date());
+  const now = useNow();
   const dashboard = useDashboard(now);
-  const resetToSample = useSubscriptionsStore((s) => s.resetToSample);
+  const loadSampleData = useSubscriptionsStore((s) => s.loadSampleData);
   const itemCount = useSubscriptionsStore((s) => s.items.length);
+  const bottomPadding = useScreenBottomPadding();
 
   const detailRef = useRef<BottomSheetModal>(null);
   const formRef = useRef<BottomSheetModal>(null);
@@ -52,7 +55,8 @@ export default function Home() {
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
       <ScrollView
-        contentContainerClassName="gap-8 px-4 pb-40 pt-4"
+        contentContainerClassName="gap-8 px-4 pt-4"
+        contentContainerStyle={{ paddingBottom: bottomPadding }}
         showsVerticalScrollIndicator={false}>
         <Entrance index={0}>
           <HeaderBar name={loadProfile().name} now={now} />
@@ -97,8 +101,8 @@ export default function Home() {
                       ? "Nothing yet. Add your first subscription."
                       : 'All quiet. Nothing renews in the next few weeks.'
                   }
-                  actionLabel={itemCount === 0 ? 'Add sample subscriptions' : undefined}
-                  onAction={itemCount === 0 ? resetToSample : undefined}
+                  actionLabel={itemCount === 0 ? 'Explore with sample data' : undefined}
+                  onAction={itemCount === 0 ? loadSampleData : undefined}
                 />
               </Card>
             )}

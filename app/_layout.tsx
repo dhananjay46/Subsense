@@ -12,7 +12,6 @@ import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { MobileFrame } from '@/components/mobile-frame';
 import { colors } from '@/lib/tokens';
 
 SplashScreen.preventAutoHideAsync();
@@ -36,22 +35,20 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      <MobileFrame>
-        <BottomSheetModalProvider>
-          <StatusBar style="dark" />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: colors.bg },
-              animation: 'fade',
-            }}>
-            {/* Splash → onboarding → tabs is one-way: no swipe back into the intro. */}
-            <Stack.Screen name="index" />
-            <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
-            <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
-          </Stack>
-        </BottomSheetModalProvider>
-      </MobileFrame>
+      <BottomSheetModalProvider>
+        <StatusBar style="dark" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.bg },
+            animation: 'fade',
+          }}>
+          {/* Splash → onboarding → tabs is one-way: no swipe back into the intro. */}
+          <Stack.Screen name="index" />
+          <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
+          <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
+        </Stack>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }

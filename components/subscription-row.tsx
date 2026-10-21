@@ -1,6 +1,5 @@
 import { View } from 'react-native';
 
-import { useSubscriptionsStore } from '@/lib/subscriptions-store';
 import {
   categoryLabel,
   cycleLabel,
@@ -23,6 +22,8 @@ export type SubscriptionRowProps = {
   now: Date;
   /** compact: plan + relative date (timeline). detailed: category and status chips (list). */
   variant?: SubscriptionRowVariant;
+  /** When the row lives inside a category-grouped section, the category chip is redundant. */
+  showCategoryChip?: boolean;
   onPress: (subscription: Subscription) => void;
 };
 
@@ -30,10 +31,12 @@ export function SubscriptionRow({
   subscription,
   now,
   variant = 'compact',
+  showCategoryChip = true,
   onPress,
 }: SubscriptionRowProps) {
-  const currency = useSubscriptionsStore((s) => s.currency);
-  const { name, planName, price, billingCycle, renewalDate, category, status } = subscription;
+  // Each subscription carries its own currency — never relabel into the store's default.
+  const { name, planName, price, currency, billingCycle, renewalDate, category, status } =
+    subscription;
   const accessibilityLabel = [
     name,
     formatPrice(price, billingCycle, currency),
@@ -66,7 +69,7 @@ export function SubscriptionRow({
               {renewsPhrase(renewalDate, now)}
             </Text>
             <View className="flex-row flex-wrap gap-2 pt-1">
-              <Chip label={categoryLabel[category]} />
+              {showCategoryChip && <Chip label={categoryLabel[category]} />}
               <Chip
                 label={statusLabel[status]}
                 tone={

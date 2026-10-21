@@ -1,18 +1,28 @@
 import { Tabs } from 'expo-router';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TabIcon } from '@/components/tab-icon';
 import { triggerHaptic } from '@/lib/haptics';
+import { TAB_BAR_BASE } from '@/lib/layout';
 import { colors, fonts } from '@/lib/tokens';
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  // Size the bar from the safe-area inset so the label never clips the home indicator.
+  const height = TAB_BAR_BASE + insets.bottom;
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         animation: 'fade',
         sceneStyle: styles.scene,
-        tabBarStyle: styles.bar,
+        tabBarStyle: {
+          ...styles.bar,
+          height,
+          paddingBottom: insets.bottom,
+        },
         tabBarLabelStyle: styles.label,
         tabBarItemStyle: styles.item,
         tabBarActiveTintColor: colors.ink,
@@ -52,7 +62,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     elevation: 0,
     shadowOpacity: 0,
-    height: Platform.OS === 'ios' ? 84 : 64,
     paddingTop: 6,
   },
   item: { paddingVertical: 4 },

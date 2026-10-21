@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 
-import { formatCount, formatINR } from '@/lib/utils';
+import { formatCount, formatMoney } from '@/lib/utils';
 import type { DashboardSummary } from '@/types/subscription';
 
 import { cardLift } from './card';
@@ -17,20 +17,21 @@ export function KPIStack({ summary }: KPIStackProps) {
       <KPI
         label="Monthly spend"
         value={summary.monthlySpend}
-        currency="INR"
-        accessibilityValue={formatINR(summary.monthlySpend)}
+        display="currency"
+        currency={summary.monthlySpendCurrency}
+        accessibilityValue={formatMoney(summary.monthlySpend, summary.monthlySpendCurrency)}
       />
       <KPI
         label="Active"
         value={summary.activeCount}
-        currency="none"
+        display="count"
         accessibilityValue={formatCount(summary.activeCount)}
       />
       <KPI
         label="Due this week"
         value={summary.dueThisWeek}
-        currency="none"
-        tone={summary.dueThisWeek > 0 ? 'coral' : 'ink'}
+        display="count"
+        tone={summary.dueThisWeek > 0 ? 'coral-ink' : 'ink'}
         accessibilityValue={formatCount(summary.dueThisWeek)}
       />
     </View>
@@ -40,12 +41,13 @@ export function KPIStack({ summary }: KPIStackProps) {
 type KPIProps = {
   label: string;
   value: number;
-  currency: 'INR' | 'none';
+  display: 'currency' | 'count';
+  currency?: DashboardSummary['monthlySpendCurrency'];
   tone?: TextTone;
   accessibilityValue: string;
 };
 
-function KPI({ label, value, currency, tone = 'ink', accessibilityValue }: KPIProps) {
+function KPI({ label, value, display, currency, tone = 'ink', accessibilityValue }: KPIProps) {
   return (
     <View
       className="flex-1 justify-between gap-3 rounded-xl border border-coral/40 bg-surface p-4"
@@ -55,7 +57,7 @@ function KPI({ label, value, currency, tone = 'ink', accessibilityValue }: KPIPr
       <Text variant="micro" tone="subtle" numberOfLines={2}>
         {label}
       </Text>
-      <NumberDisplay value={value} currency={currency} size="sm" tone={tone} />
+      <NumberDisplay value={value} display={display} currency={currency} size="sm" tone={tone} />
     </View>
   );
 }

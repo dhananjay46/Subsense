@@ -78,15 +78,20 @@ export function renewalLabel(date: Date, now: Date): string {
 
 export function renewsPhrase(date: Date, now: Date): string {
   const label = renewalLabel(date, now);
-  const relative = label === 'Today' || label === 'Tomorrow' || label.startsWith('Next ');
-  return `Renews ${relative ? label.toLowerCase() : label}`;
+  // Only lowercase the two bare-word relatives. "Next Mon" keeps its day-of-week casing
+  // ("Renews next Mon"), and absolute labels like "12 Mar" stay as-is.
+  if (label === 'Today' || label === 'Tomorrow') return `Renews ${label.toLowerCase()}`;
+  if (label.startsWith('Next ')) return `Renews next ${label.slice(5)}`;
+  return `Renews ${label}`;
 }
 
 export function greeting(now: Date): string {
   const hour = now.getHours();
+  if (hour < 5) return 'Good night';
   if (hour < 12) return 'Good morning';
   if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (hour < 21) return 'Good evening';
+  return 'Good night';
 }
 
 export const categoryLabel: Record<SubscriptionCategory, string> = {
@@ -100,7 +105,7 @@ export const categoryLabel: Record<SubscriptionCategory, string> = {
 
 export const statusLabel: Record<SubscriptionStatus, string> = {
   active: 'Active',
-  expiring: 'Expiring',
+  expiring: 'Renews soon',
   paused: 'Paused',
   trial: 'Trial',
 };

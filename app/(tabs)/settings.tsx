@@ -1,12 +1,13 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import Constants from 'expo-constants';
-import { useRef, type ReactNode } from 'react';
+import { useMemo, useRef, type ReactNode } from 'react';
 import { ScrollView, Switch, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { Chip } from '@/components/chip';
+import { ConfirmSheet } from '@/components/confirm-sheet';
 import { Divider } from '@/components/divider';
 import { HapticPressable } from '@/components/haptic-pressable';
 import { ScreenHeader } from '@/components/screen-header';
@@ -25,8 +26,13 @@ export default function Settings() {
   const setNotificationsEnabled = useSettings((s) => s.setNotificationsEnabled);
   const currency = useSubscriptionsStore((s) => s.currency);
   const setCurrency = useSubscriptionsStore((s) => s.setCurrency);
+  const items = useSubscriptionsStore((s) => s.items);
+  const removeSampleData = useSubscriptionsStore((s) => s.removeSampleData);
   const aboutRef = useRef<BottomSheetModal>(null);
+  const confirmRef = useRef<BottomSheetModal>(null);
   const version = Constants.expoConfig?.version ?? '1.0.0';
+
+  const sampleCount = useMemo(() => items.filter((s) => s.isSample).length, [items]);
 
   const onPickCurrency = (code: CurrencyCode) => {
     triggerHaptic('selection');
@@ -51,8 +57,13 @@ export default function Settings() {
         <Section title="Preferences">
           <Card padding="none">
             <View className="gap-3 p-5">
-              <View className="flex-row items-center justify-between">
-                <Text variant="body-lg">Currency</Text>
+              <View className="flex-row items-start justify-between gap-4">
+                <View className="flex-1 gap-1">
+                  <Text variant="body-lg">Default currency for new subscriptions</Text>
+                  <Text variant="caption" tone="muted">
+                    Existing items keep their own currency.
+                  </Text>
+                </View>
                 <Text variant="caption" tone="muted">
                   {currency}
                 </Text>
@@ -64,7 +75,7 @@ export default function Settings() {
                     label={`${cur.symbol} ${cur.code}`}
                     selected={currency === cur.code}
                     onPress={() => onPickCurrency(cur.code)}
-                    accessibilityLabel={`Set currency to ${cur.name}`}
+                    accessibilityLabel={`Set default currency to ${cur.name}`}
                   />
                 ))}
               </View>
@@ -85,13 +96,30 @@ export default function Settings() {
                   triggerHaptic('selection');
                   setNotificationsEnabled(enabled);
                 }}
-                trackColor={{ false: colors.lineStrong, true: colors.coral }}
+                trackColor={{ false: colors.lineStrong, true: colors.coralFill }}
                 thumbColor={colors.surface}
                 ios_backgroundColor={colors.lineStrong}
               />
             </View>
           </Card>
         </Section>
+
+        {sampleCount > 0 ? (
+          <Section title="Sample data">
+            <Card>
+              <View className="gap-3">
+                <Text variant="body" tone="muted">
+                  You have {sampleCount} sample subscription{sampleCount === 1 ? '' : 's'} loaded.
+                </Text>
+                <Button
+                  label="Remove sample data"
+                  variant="secondary"
+                  onPress={() => confirmRef.current?.present()}
+                />
+              </View>
+            </Card>
+          </Section>
+        ) : null}
 
         <Section title="About">
           <Card padding="none">
@@ -124,7 +152,7 @@ export default function Settings() {
               <Text variant="body-lg" tone="muted">
                 Made in India
               </Text>
-              <Text variant="body-lg" tone="coral">
+              <Text variant="body-lg" tone="coral-ink">
                 ♥
               </Text>
             </View>
@@ -144,6 +172,14 @@ export default function Settings() {
           <Button label="Done" variant="secondary" onPress={() => aboutRef.current?.dismiss()} />
         </View>
       </Sheet>
+
+      <ConfirmSheet
+        ref={confirmRef}
+        title="Remove sample data?"
+        body="Your own subscriptions stay. You can bring the samples back from the empty-state card any time."
+        confirmLabel="Remove"
+        onConfirm={removeSampleData}
+      />
     </SafeAreaView>
   );
 }
