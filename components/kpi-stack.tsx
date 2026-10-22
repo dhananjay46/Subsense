@@ -1,9 +1,9 @@
-import { View } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
 
+import { colors } from '@/lib/tokens';
 import { formatCount, formatMoney } from '@/lib/utils';
 import type { DashboardSummary } from '@/types/subscription';
 
-import { cardLift } from './card';
 import { NumberDisplay } from './number-display';
 import { Text, type TextTone } from './text';
 
@@ -38,6 +38,12 @@ export function KPIStack({ summary }: KPIStackProps) {
   );
 }
 
+const kpiCardStyle: ViewStyle = {
+  borderWidth: 1.5,
+  borderColor: colors.kpiEdge,
+  boxShadow: `0 3px 8px 0 ${colors.kpiGlow}`,
+};
+
 type KPIProps = {
   label: string;
   value: number;
@@ -50,8 +56,8 @@ type KPIProps = {
 function KPI({ label, value, display, currency, tone = 'ink', accessibilityValue }: KPIProps) {
   return (
     <View
-      className="flex-1 justify-between gap-3 rounded-xl border border-coral/40 bg-surface p-4"
-      style={cardLift}
+      className="flex-1 justify-between gap-3 rounded-md bg-surface p-4"
+      style={kpiCardStyle}
       accessible
       accessibilityLabel={`${label}, ${accessibilityValue}`}>
       <Text variant="micro" tone="subtle" numberOfLines={2}>

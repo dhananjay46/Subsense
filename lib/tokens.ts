@@ -25,6 +25,8 @@ export const colors = {
   amberInk: '#7A5200',
   rose: '#B3261E',
   roseSoft: '#F5D9D6',
+  kpiEdge: 'rgba(240,182,169,0.19)',
+  kpiGlow: 'rgba(240,182,169,0.16)',
   scrim: 'rgba(22,22,26,0.32)',
   blurTint: 'rgba(250,250,247,0.72)',
 } as const;
