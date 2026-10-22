@@ -62,7 +62,7 @@ export function MonthlyTrend() {
   }
 
   return (
-    <Card className="gap-5 border-coral/40" style={cardLift}>
+    <Card className="gap-5 border-coral/40 bg-coral-soft" style={cardLift}>
       <View className="flex-row items-end justify-between">
         <View>
           <Text variant="title">Monthly trend</Text>
@@ -71,7 +71,9 @@ export function MonthlyTrend() {
           </Text>
         </View>
         <View className="items-end">
-          <Text variant="mono-lg">{formatMoney(peakMonth.value, currency)}</Text>
+          <Text variant="mono-lg" tone="coral-ink">
+            {formatMoney(peakMonth.value, currency)}
+          </Text>
           <Text variant="caption" tone="subtle">
             peak · {peakMonth.label}
           </Text>
@@ -84,7 +86,7 @@ export function MonthlyTrend() {
         ))}
       </View>
 
-      <View className="flex-row justify-between">
+      <View className="border-t border-coral/20 pt-3 flex-row justify-between">
         {bars.map((bar) => (
           <View key={bar.label} className="items-center" style={{ width: 32 }}>
             <Text variant="mono" tone="subtle">

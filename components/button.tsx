@@ -16,6 +16,7 @@ export type ButtonProps = {
   accessibilityHint?: string;
   disabled?: boolean;
   className?: string;
+  labelClassName?: string;
 };
 
 type VariantStyle = { box: string; text: TextTone; haptic: HapticStrength };
@@ -48,6 +49,7 @@ export function Button({
   accessibilityHint,
   disabled = false,
   className,
+  labelClassName,
 }: ButtonProps) {
   const style = variantStyle[variant];
   // The AnimatedPressable's className is static per instance — variant/size are stable, and
@@ -68,7 +70,11 @@ export function Button({
         style.box,
         className,
       )}>
-      <Text variant={size === 'compact' ? 'body' : 'title'} tone={style.text}>
+      <Text
+        variant={size === 'compact' ? 'body' : 'title'}
+        tone={style.text}
+        numberOfLines={1}
+        className={labelClassName}>
         {label}
       </Text>
     </HapticPressable>

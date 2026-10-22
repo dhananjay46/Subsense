@@ -44,6 +44,8 @@ const FORM_SNAP = ['92%'];
 const DAY_PRESETS = [1, 3, 7, 14, 30] as const;
 const OWNER_PRESETS = ['Me', 'Shared with family'] as const;
 
+type RenewalPreset = `${(typeof DAY_PRESETS)[number]}d` | '1m' | '3m' | '1y' | null;
+
 type FormState = {
   name: string;
   planName: string;
@@ -51,6 +53,7 @@ type FormState = {
   category: SubscriptionCategory;
   billingCycle: BillingCycle;
   renewalDate: Date;
+  renewalPreset: RenewalPreset;
   isTrial: boolean;
   owner: string;
   cancelUrl: string;
@@ -65,6 +68,7 @@ function toForm(existing: Subscription | null): FormState {
       category: existing.category,
       billingCycle: existing.billingCycle,
       renewalDate: existing.renewalDate,
+      renewalPreset: null,
       isTrial: Boolean(existing.isTrial),
       owner: existing.owner ?? '',
       cancelUrl: existing.cancelUrl ?? '',
@@ -77,6 +81,7 @@ function toForm(existing: Subscription | null): FormState {
     category: 'entertainment',
     billingCycle: 'monthly',
     renewalDate: addMonths(new Date(), 1),
+    renewalPreset: '1m',
     isTrial: false,
     owner: 'Me',
     cancelUrl: '',
@@ -154,7 +159,12 @@ const FormSheetHost = forwardRef<BottomSheetModal, FormSheetHostProps>(function 
   const footer = (
     <View className="flex-row gap-3">
       <View className="flex-1">
-        <Button label="Cancel" variant="secondary" onPress={dismiss} />
+        <Button
+          label="Cancel"
+          variant="secondary"
+          onPress={dismiss}
+          labelClassName="text-[16px] leading-[22px]"
+        />
       </View>
       <View className="flex-1">
         <Button
@@ -162,6 +172,7 @@ const FormSheetHost = forwardRef<BottomSheetModal, FormSheetHostProps>(function 
           onPress={onSave}
           disabled={!canSave}
           accessibilityHint="Saves this subscription"
+          labelClassName="text-[16px] leading-[22px]"
         />
       </View>
     </View>
@@ -265,30 +276,56 @@ function FormBody({ form, setForm, existing }: FormBodyProps) {
 
       <Field label={`Renews on ${format(form.renewalDate, 'EEE, d MMM yyyy')}`}>
         <View className="flex-row flex-wrap gap-2">
-          {DAY_PRESETS.map((days) => (
-            <Chip
-              key={days}
-              label={`+${days}d`}
-              onPress={() =>
-                setForm((f) => ({
-                  ...f,
-                  renewalDate: new Date(Date.now() + days * 24 * 60 * 60 * 1000),
-                }))
-              }
-              accessibilityLabel={`Renew in ${days} days`}
-            />
-          ))}
+          {DAY_PRESETS.map((days) => {
+            const presetKey = `${days}d` as RenewalPreset;
+            return (
+              <Chip
+                key={days}
+                label={`+${days}d`}
+                selected={form.renewalPreset === presetKey}
+                onPress={() =>
+                  setForm((f) => ({
+                    ...f,
+                    renewalDate: new Date(Date.now() + days * 24 * 60 * 60 * 1000),
+                    renewalPreset: presetKey,
+                  }))
+                }
+                accessibilityLabel={`Renew in ${days} days`}
+              />
+            );
+          })}
           <Chip
             label="+1 month"
-            onPress={() => setForm((f) => ({ ...f, renewalDate: addMonths(new Date(), 1) }))}
+            selected={form.renewalPreset === '1m'}
+            onPress={() =>
+              setForm((f) => ({
+                ...f,
+                renewalDate: addMonths(new Date(), 1),
+                renewalPreset: '1m',
+              }))
+            }
           />
           <Chip
             label="+3 months"
-            onPress={() => setForm((f) => ({ ...f, renewalDate: addMonths(new Date(), 3) }))}
+            selected={form.renewalPreset === '3m'}
+            onPress={() =>
+              setForm((f) => ({
+                ...f,
+                renewalDate: addMonths(new Date(), 3),
+                renewalPreset: '3m',
+              }))
+            }
           />
           <Chip
             label="+1 year"
-            onPress={() => setForm((f) => ({ ...f, renewalDate: addYears(new Date(), 1) }))}
+            selected={form.renewalPreset === '1y'}
+            onPress={() =>
+              setForm((f) => ({
+                ...f,
+                renewalDate: addYears(new Date(), 1),
+                renewalPreset: '1y',
+              }))
+            }
           />
         </View>
       </Field>

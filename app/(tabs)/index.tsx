@@ -117,6 +117,8 @@ export default function Home() {
             <MonthlyTrend />
           </View>
         </Entrance>
+
+        <View className="h-5" />
       </ScrollView>
 
       <FAB label="Add" onPress={openAdd} accessibilityHint="Add a new subscription" />
